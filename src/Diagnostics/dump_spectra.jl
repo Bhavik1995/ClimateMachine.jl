@@ -32,8 +32,8 @@ function setup_dump_spectra_diagnostics(
     return DiagnosticsGroup(
         "Spectra",
         Diagnostics.dump_spectra_init,
-        Diagnostics.dump_spectra_fini,
         Diagnostics.dump_spectra_collect,
+        Diagnostics.dump_spectra_fini,
         interval,
         out_prefix,
         writer,
