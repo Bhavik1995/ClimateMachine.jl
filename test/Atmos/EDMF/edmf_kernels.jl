@@ -210,7 +210,7 @@ function vars_state(::Updraft, ::Auxiliary, FT)
 end
 
 function vars_state(::Environment, ::Auxiliary, FT)
-    @vars(T::FT, cld_frac::FT, buoyancy::FT,l_mix::FT)
+    @vars(T::FT, cld_frac::FT, buoyancy::FT)
 end
 
 function vars_state(m::EDMF, st::Auxiliary, FT)
@@ -476,17 +476,14 @@ function turbconv_nodal_update_auxiliary_state!(
     end
     en_a.buoyancy -= b_gm
 
-    ε_trb = MArray{Tuple{N_up}, FT}(zeros(FT, N_up))
-    δ_dyn = MArray{Tuple{N_up}, FT}(zeros(FT, N_up))
     ntuple(N_up) do i
-        ε_dyn, δ_dyn[i] ,ε_trb[i]=
+        ε_dyn, δ_dyn,ε_trb=
             entr_detr(m, m.turbconv.entr_detr, state, aux, t, i)
         up_a[i].ε_dyn = ε_dyn
         up_a[i].δ_dyn = ε_trb[i]
         up_a[i].ε_trb = δ_dyn[i]
         up_a[i].ε_δ = ε_dyn - δ_dyn
     end
-    en_a.l_mix = mixing_length(m, m.turbconv.mix_len, state, diffusive, aux, t, δ_dyn, ε_trb)
 
 end;
 
@@ -641,7 +638,7 @@ function turbconv_source!(
         # first moment sources - for now we compute these as aux variable
         ε_dyn[i], δ_dyn[i], ε_trb[i] =
             entr_detr(m, m.turbconv.entr_detr, state, aux, t, i)
-        δ_dyn[i] = FT(0)
+        # δ_dyn[i] = FT(0)
         dpdz, dpdz_tke_i = perturbation_pressure(
             m,
             m.turbconv.pressure,
@@ -850,7 +847,7 @@ function flux_second_order!(
         ε_dyn[i] = up_a[i].ε_dyn
         δ_dyn[i] = up_a[i].δ_dyn
         ε_trb[i] = up_a[i].ε_trb
-        δ_dyn[i] = FT(0)
+        # δ_dyn[i] = FT(0)
     end
     l_mix = mixing_length(m, turbconv.mix_len, state, diffusive, aux, t, δ_dyn, ε_trb)
     en_area = environment_area(state, aux, N_up)

@@ -37,10 +37,10 @@ function entr_detr(
         nondimensional_exchange_functions(m, entr, state, aux, t, i)
 
     # I am commenting this out for now, to make sure there is no slowdown here
-    # Λ_w = abs(Δb/Δw)
-    # Λ_tke = entr.c_λ * abs(Δb / (max(en.ρatke,0) + w_min))
-    # λ = lamb_smooth_minimum(SVector(Λ_w, Λ_tke)
-    λ = abs(Δb / Δw)
+    Λ_w = abs(Δb/Δw)
+    Λ_tke = entr.c_λ * abs(Δb / (max(en.ρatke*ρinv,0) + w_min))
+    λ = lamb_smooth_minimum(SVector(Λ_w, Λ_tke))
+    # λ = abs(Δb / Δw)
 
     # compute limiters
     εt_lim = εt_limiter(w_up, sqrt_ϵ)
