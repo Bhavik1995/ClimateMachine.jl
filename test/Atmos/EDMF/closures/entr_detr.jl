@@ -30,7 +30,17 @@ function entr_detr(
     w_en = environment_w(state, aux, N_up)
     w_up = up[i].ρaw / up[i].ρa
     sqrt_tke = sqrt(max(en.ρatke, 0) * ρinv / a_en)
-    Δw = max(abs(w_up - w_en), w_min)
+    Δw = w_up - w_en
+    if Δw<FT(0)
+        Δw = min(Δw, -w_min)
+    else
+        Δw = max(Δw, w_min)
+    end
+    if w_up<FT(0)
+        w_up = min(w_up, -w_min)
+    else
+        w_up = max(w_up, w_min)
+    end
     Δb = up_a[i].buoyancy - en_a.buoyancy
 
     D_ε, D_δ, M_δ, M_ε =
@@ -51,22 +61,23 @@ function entr_detr(
            # max( (w_up * up_area * up_a[i].updraft_top),FT(1e-4))
     ε_trb =
         2 * up_area * entr.c_t * sqrt_tke /
-        max((w_up * up_area * FT(500)), sqrt_ϵ) * εt_lim
-    ε_dyn = λ / max(abs(w_up), w_min) * (D_ε + M_ε + ε_lim)
-    δ_dyn = λ / max(abs(w_up), w_min) * (D_δ + M_δ + δ_lim)
+        max((w_up * up_area * FT(500)), sqrt_ϵ)#* εt_lim
+    ε_dyn = λ / w_up * (D_ε + M_ε)*ε_lim
+    δ_dyn = λ / w_up * (D_δ + M_δ)*δ_lim
 
     ε_dyn = min(max(ε_dyn, FT(0)), FT(1))
     δ_dyn = min(max(δ_dyn, FT(0)), FT(1))
     ε_trb = min(max(ε_trb, FT(0)), FT(1))
-    return ε_dyn, δ_dyn, ε_trb
+
+    return ε_dyn, δ_dyn, ε_trb, D_ε, M_ε, D_δ, M_δ, ε_lim, δ_lim, εt_lim,  λ, Δw
 end;
 
 ε_limiter(a_up::FT, ϵ::FT) where {FT} =
-    exp(-FT(0.1) * a_up / ϵ)
+    FT(1) + FT(10)*exp(-a_up^2/(2*ϵ)) - exp(-(FT(1)-a_up)^2/(2*ϵ))
 δ_limiter(a_up::FT, ϵ::FT) where {FT} =
-    exp(-FT(0.1) * (1 - a_up) / ϵ)
+    FT(1) - exp(-a_up^2/(2*ϵ)) + FT(10)*exp(-(FT(1)-a_up)^2/(2*ϵ))
 εt_limiter(w_up::FT, ϵ::FT) where {FT} =
-    exp(-FT(0.2) * w_up / ϵ)
+    FT(1) + FT(10)*exp(-w_up^2/(2*ϵ))
 
 # ε_limiter(a_up::FT, ϵ::FT) where {FT} = 1
 # δ_limiter(a_up::FT, ϵ::FT) where {FT} = 1

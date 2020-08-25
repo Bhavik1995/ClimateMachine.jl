@@ -200,6 +200,15 @@ function vars_state(::Updraft, ::Auxiliary, FT)
         δ_dyn::FT,
         ε_trb::FT,
         ε_δ::FT,
+        D_ε::FT,
+        M_ε::FT,
+        D_δ::FT,
+        M_δ::FT,
+        ε_lim::FT,
+        δ_lim::FT,
+        εt_lim::FT,
+        λ::FT,
+        Δw::FT,
         T::FT,
         H::FT,
         H_integ::FT,
@@ -215,6 +224,7 @@ end
 
 function vars_state(m::EDMF, st::Auxiliary, FT)
     @vars(
+        θ_liq::FT,
         environment::vars_state(m.environment, st, FT),
         updraft::vars_state(m.updraft, st, FT)
     )
@@ -444,6 +454,7 @@ function turbconv_nodal_update_auxiliary_state!(
 
     #  -------------  Compute buoyancies of subdomains
     ts = thermo_state(m, state, aux)
+    aux.turbconv.θ_liq = total_specific_humidity(ts)
     gm_p = air_pressure(ts)
     ρinv = 1 / gm.ρ
     _grav::FT = grav(m.param_set)
@@ -455,13 +466,13 @@ function turbconv_nodal_update_auxiliary_state!(
         aux.turbconv.updraft[i].H_integ = max(0, z^10 * ρaw_i)
     end
 
-    ts = thermo_state_en(m, state, aux)
-    en_ρ = air_density(ts)
+    ts_en = thermo_state_en(m, state, aux)
+    en_ρ = air_density(ts_en)
     en_a.buoyancy = -_grav * (en_ρ - aux.ref_state.ρ) * ρinv
 
     ntuple(N_up) do i
-        ts = thermo_state_up(m, state, aux, i)
-        ρ_i = air_density(ts)
+        ts_up = thermo_state_up(m, state, aux, i)
+        ρ_i = air_density(ts_up)
         up_a[i].buoyancy = -_grav * (ρ_i - aux.ref_state.ρ) * ρinv
         up_a[i].a = up[i].ρa * ρinv
         up_a[i].θ_liq = up[i].ρaθ_liq/up[i].ρa
@@ -477,12 +488,22 @@ function turbconv_nodal_update_auxiliary_state!(
     en_a.buoyancy -= b_gm
 
     ntuple(N_up) do i
-        ε_dyn, δ_dyn,ε_trb=
+        ε_dyn, δ_dyn, ε_trb, D_ε, M_ε, D_δ, M_δ, ε_lim, δ_lim, εt_lim, λ, Δw =
             entr_detr(m, m.turbconv.entr_detr, state, aux, t, i)
         up_a[i].ε_dyn = ε_dyn
-        up_a[i].δ_dyn = ε_trb[i]
-        up_a[i].ε_trb = δ_dyn[i]
+        up_a[i].δ_dyn = δ_dyn[i]
+        up_a[i].ε_trb = ε_trb[i]
         up_a[i].ε_δ = ε_dyn - δ_dyn
+
+        up_a[i].D_ε = D_ε
+        up_a[i].M_ε = M_ε
+        up_a[i].D_δ = D_δ
+        up_a[i].M_δ = M_δ
+        up_a[i].ε_lim = ε_lim
+        up_a[i].δ_lim = δ_lim
+        up_a[i].εt_lim = εt_lim
+        up_a[i].λ = λ
+        up_a[i].Δw = Δw
     end
 
 end;
@@ -636,7 +657,7 @@ function turbconv_source!(
         ρa_i = enforce_unit_bounds(up[i].ρa)
 
         # first moment sources - for now we compute these as aux variable
-        ε_dyn[i], δ_dyn[i], ε_trb[i] =
+        ε_dyn[i], δ_dyn[i], ε_trb[i], _, _, _, _, _, _, _, _, _  =
             entr_detr(m, m.turbconv.entr_detr, state, aux, t, i)
         # δ_dyn[i] = FT(0)
         dpdz, dpdz_tke_i = perturbation_pressure(
@@ -843,7 +864,7 @@ function flux_second_order!(
 
     ntuple(N_up) do i
         # for now we compute these as aux variable
-        ε_dyn[i], δ_dyn[i], ε_trb[i] = entr_detr(m, m.turbconv.entr_detr, state, aux, t, i)
+        ε_dyn[i], δ_dyn[i], ε_trb[i], _, _, _, _, _, _, _, _ ,_ = entr_detr(m, m.turbconv.entr_detr, state, aux, t, i)
         ε_dyn[i] = up_a[i].ε_dyn
         δ_dyn[i] = up_a[i].δ_dyn
         ε_trb[i] = up_a[i].ε_trb
@@ -903,13 +924,13 @@ function flux_second_order!(
     ρq_tot_sgs_flux = -gm.ρ * en_area * K_eddy * en_d.∇q_tot[3] + massflux_q_tot
     ρu_sgs_flux = -gm.ρ * en_area * K_eddy * en_d.∇w[3] + massflux_w
 
-    # gm_f.ρe              += SVector{3,FT}(0,0,ρe_sgs_flux)
-    # gm_f.moisture.ρq_tot += SVector{3,FT}(0,0,ρq_tot_sgs_flux)
-    # gm_f.ρu              += SMatrix{3, 3, FT, 9}(
-    #     0, 0, 0,
-    #     0, 0, 0,
-    #     0, 0, ρu_sgs_flux,
-    # )
+    gm_f.ρe              += SVector{3,FT}(0,0,ρe_sgs_flux)
+    gm_f.moisture.ρq_tot += SVector{3,FT}(0,0,ρq_tot_sgs_flux)
+    gm_f.ρu              += SMatrix{3, 3, FT, 9}(
+        0, 0, 0,
+        0, 0, 0,
+        0, 0, ρu_sgs_flux,
+    )
 
     # env second moment flux_second_order
     en_f.ρatke = -gm.ρ * en_area * K_eddy * en_d.∇tke[3]

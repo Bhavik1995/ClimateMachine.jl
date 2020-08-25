@@ -33,7 +33,12 @@ function nondimensional_exchange_functions(
     ts_en = thermo_state_en(m, state, aux)
     RH_en = relative_humidity(ts_en)
 
-    Δw = max(abs(w_up - w_en), w_min)
+    Δw = w_up - w_en
+    if Δw>FT(0)
+        Δw = max(Δw, w_min)
+    else
+        Δw = min(Δw, -w_min)
+    end
     Δb = up_a[i].buoyancy - en_a.buoyancy
 
     if saturated(ts_up) || saturated(ts_en)
