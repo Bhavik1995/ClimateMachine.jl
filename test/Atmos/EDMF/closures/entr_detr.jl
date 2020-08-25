@@ -30,17 +30,10 @@ function entr_detr(
     w_en = environment_w(state, aux, N_up)
     w_up = up[i].ρaw / up[i].ρa
     sqrt_tke = sqrt(max(en.ρatke, 0) * ρinv / a_en)
-    Δw = w_up - w_en
-    if Δw<FT(0)
-        Δw = min(Δw, -w_min)
-    else
-        Δw = max(Δw, w_min)
-    end
-    if w_up<FT(0)
-        w_up = min(w_up, -w_min)
-    else
-        w_up = max(w_up, w_min)
-    end
+    # ensure far from zero
+    Δw = filter_w(w_up - w_en, w_min)
+    w_up = filter_w(w_up, w_min)
+
     Δb = up_a[i].buoyancy - en_a.buoyancy
 
     D_ε, D_δ, M_δ, M_ε =
@@ -78,6 +71,9 @@ end;
     FT(1) - exp(-a_up^2/(2*ϵ)) + FT(10)*exp(-(FT(1)-a_up)^2/(2*ϵ))
 εt_limiter(w_up::FT, ϵ::FT) where {FT} =
     FT(1) + FT(10)*exp(-w_up^2/(2*ϵ))
+
+filter_w(w, w_min) where {FT} =
+       max(abs(w), w_min)*(w < 0 ? sign(w) : 1)
 
 # ε_limiter(a_up::FT, ϵ::FT) where {FT} = 1
 # δ_limiter(a_up::FT, ϵ::FT) where {FT} = 1
