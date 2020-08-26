@@ -21,6 +21,7 @@ src/**/Manifest.toml
 
 # Data
 *.vtk
+*.h5
 *.dat
 *.vtu
 *.pvtu

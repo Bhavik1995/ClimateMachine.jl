@@ -641,3 +641,15 @@ function main()
 end
 
 solver_config, all_data, time_data = main()
+
+accept_new_solution = false
+include("io_state.jl")
+if accept_new_solution
+    export_state(solver_config, "bomex_edmf_output")
+end
+
+bomex_data = import_state("bomex_edmf_output")
+using Test
+@test all(solver_config.Q.data .≈ bomex_data[Prognostic()])
+# @test all(solver_config.dg.state_auxiliary.data .≈ bomex_data[Auxiliary()]) # Has some NaNs
+
