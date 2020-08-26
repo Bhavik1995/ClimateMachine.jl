@@ -30,7 +30,6 @@ import ...BalanceLaws:
 import ..Ocean: ocean_init_state!, ocean_init_aux!
 
 using ...Mesh.Geometry: LocalGeometry
-using ...DGMethods: nodal_init_state_auxiliary!
 
 ×(a::SVector, b::SVector) = StaticArrays.cross(a, b)
 ⋅(a::SVector, b::SVector) = StaticArrays.dot(a, b)
@@ -111,12 +110,18 @@ function vars_state(m::SWModel, ::Auxiliary, T)
     end
 end
 
-function init_state_auxiliary!(m::SWModel, state_auxiliary::MPIStateArray, grid)
-    nodal_init_state_auxiliary!(
+function init_state_auxiliary!(
+    m::SWModel,
+    state_auxiliary::MPIStateArray,
+    grid,
+    direction,
+)
+    init_state_auxiliary!(
         m,
         (m, A, tmp, geom) -> ocean_init_aux!(m, m.problem, A, geom),
         state_auxiliary,
         grid,
+        direction,
     )
 end
 
