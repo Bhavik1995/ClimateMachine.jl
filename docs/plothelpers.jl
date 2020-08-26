@@ -1,5 +1,5 @@
 using Plots
-using ClimateMachine.BalanceLaws: Prognostic, Auxiliary
+using ClimateMachine.BalanceLaws: Prognostic, Auxiliary, GradientFlux
 
 """
     plot_friendly_name(ϕ)

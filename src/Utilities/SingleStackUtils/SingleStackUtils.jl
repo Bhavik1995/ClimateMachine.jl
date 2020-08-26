@@ -317,7 +317,7 @@ variables at the `i=1`,`j=1` node given
 """
 function dict_of_nodal_states(
     solver_config,
-    aux_excludes = [],
+    aux_excludes = String[],
     state_types = (Prognostic(), Auxiliary()),
 )
     FT = eltype(solver_config.Q)
