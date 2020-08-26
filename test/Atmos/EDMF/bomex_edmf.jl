@@ -387,7 +387,7 @@ function init_bomex!(bl, state, aux, (x, y, z), t)
     return nothing
 end
 
-function config_bomex(FT, N, nelem_vert, zmax)
+function config_bomex(::Type{FT}, N, nelem_vert, zmax) where {FT}
 
     ics = init_bomex!     # Initial conditions
 
@@ -510,8 +510,7 @@ function config_diagnostics(driver_config)
     ])
 end
 
-function main()
-    FT = Float32
+function main(::Type{FT}) where {FT}
 
     # DG polynomial order
     N = 1
@@ -640,7 +639,7 @@ function main()
     return solver_config, all_data, time_data
 end
 
-solver_config, all_data, time_data = main()
+solver_config, all_data, time_data = main(Float64)
 
 accept_new_solution = false
 include("io_state.jl")
