@@ -14,7 +14,7 @@
 # SGS vertical flux and cloud fraction in the host model grid.
 
 # -------------- Subdomains:
-# The model has a grid mean (the dycore stats vector),i=1:N updrafts and 
+# The model has a grid mean (the dycore stats vector),i=1:N updrafts and
 # a single environment subdomain (subscript "0")
 # The grid mean is prognostic in first moment and diagnostic in second moment.
 # The updrafts are prognostic in first moment and set to zero in second moment.
@@ -136,11 +136,12 @@
 
 #### EDMF model kernels
 
+using CLIMAParameters.Planet: e_int_v0, grav, day, R_d, R_v, molmass_ratio
 using Printf
 using ClimateMachine.Atmos:
     integral_load_auxiliary_state!,
     integral_set_auxiliary_state!,
-    atmos_nodal_update_auxiliary_state!
+    nodal_update_auxiliary_state!
 
 using ClimateMachine.BalanceLaws:
     UpwardIntegrals,
@@ -148,7 +149,11 @@ using ClimateMachine.BalanceLaws:
     reverse_indefinite_stack_integral!,
     number_states
 
+using ClimateMachine.MPIStateArrays: MPIStateArray
+using ClimateMachine.DGMethods: LocalGeometry, DGModel
+
 import ClimateMachine.BalanceLaws:
+    vars_state,
     update_auxiliary_state!,
     integral_load_auxiliary_state!,
     integral_set_auxiliary_state!
@@ -412,8 +417,8 @@ function update_auxiliary_state!(
 
     copy_stack_down!(dg, m, m.turbconv, Q, t, elems)
 
-    nodal_update_auxiliary_state!(
-        atmos_nodal_update_auxiliary_state!,
+    update_auxiliary_state!(
+        nodal_update_auxiliary_state!,
         dg,
         m,
         Q,

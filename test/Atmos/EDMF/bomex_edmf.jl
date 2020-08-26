@@ -1,8 +1,30 @@
 using ClimateMachine
+using ClimateMachine.SingleStackUtils
+using ClimateMachine.BalanceLaws: vars_state
 const clima_dir = dirname(dirname(pathof(ClimateMachine)));
+using Plots
+include(joinpath(clima_dir, "docs", "plothelpers.jl"));
 include(joinpath(clima_dir, "experiments", "AtmosLES", "bomex_model.jl"))
+include("edmf_model.jl")
+include("edmf_kernels.jl")
 
 function main(::Type{FT}) where {FT}
+    # add a command line argument to specify the kind of surface flux
+    # TODO: this will move to the future namelist functionality
+    bomex_args = ArgParseSettings(autofix_names = true)
+    add_arg_group!(bomex_args, "BOMEX")
+    @add_arg_table! bomex_args begin
+        "--surface-flux"
+        help = "specify surface flux for energy and moisture"
+        metavar = "prescribed|bulk"
+        arg_type = String
+        default = "prescribed"
+    end
+
+    cl_args =
+        ClimateMachine.init(parse_clargs = true, custom_clargs = bomex_args)
+
+    surface_flux = cl_args["surface_flux"]
 
     # DG polynomial order
     N = 1
@@ -20,7 +42,7 @@ function main(::Type{FT}) where {FT}
     timeend = FT(400)
     #timeend = FT(3600 * 6)
     CFLmax = FT(0.90)
-    FT = Float64
+
     config_type = SingleStackConfigType
 
     # Choose default IMEX solver
@@ -34,7 +56,7 @@ function main(::Type{FT}) where {FT}
 
     # Assemble configuration
     driver_config = ClimateMachine.SingleStackConfiguration(
-        "BOMEX_SINGLE_STACK",
+        "BOMEX_EDMF",
         N,
         nelem_vert,
         zmax,
@@ -84,9 +106,9 @@ function main(::Type{FT}) where {FT}
     # -------------------------- Quick & dirty diagnostics. TODO: replace with proper diagnostics
 
     grid = driver_config.grid
-    output_dir = ClimateMachine.Settings.output_dir
-    @show output_dir
-    state_types = (Prognostic(), Auxiliary(), GradientFlux())
+
+    # state_types = (Prognostic(), Auxiliary(), GradientFlux())
+    state_types = (Prognostic(), Auxiliary())
     all_data = [dict_of_nodal_states(solver_config, ["z"], state_types)]
     time_data = FT[0]
 
@@ -94,7 +116,7 @@ function main(::Type{FT}) where {FT}
         solver_config,
         all_data,
         time_data,
-        joinpath(clima_dir, "output", "ICs");
+        joinpath(clima_dir, "output", "bomex_edmf", "ICs");
         state_types = state_types,
     )
 
@@ -133,33 +155,34 @@ function main(::Type{FT}) where {FT}
         diagnostics_config = dgn_config,
         user_callbacks = (cbtmarfilter, cb_check_cons, cb_data_vs_time),
         check_euclidean_distance = true,
-        # numberofsteps = 291
     )
+
     push!(all_data, dict_of_nodal_states(solver_config, ["z"], state_types))
     push!(time_data, gettime(solver_config.solver))
 
-    export_state_plots(
-        solver_config,
-        all_data,
-        time_data,
-        joinpath(clima_dir, "output", "runtime");
-        state_types = state_types,
-    )
-
-    @test !isnan(norm(Q))
     return solver_config, all_data, time_data
 end
 
 solver_config, all_data, time_data = main(Float64)
 
-accept_new_solution = false
-include("io_state.jl")
-if accept_new_solution
-    export_state(solver_config, "bomex_edmf_output")
-end
+export_state_plots(
+    solver_config,
+    all_data,
+    time_data,
+    joinpath(clima_dir, "output", "bomex_edmf", "runtime");
+    state_types = state_types,
+)
 
-bomex_data = import_state("bomex_edmf_output")
-using Test
-@test all(solver_config.Q.data .≈ bomex_data[Prognostic()])
+@test !isnan(norm(Q))
+
+# accept_new_solution = false
+# include("io_state.jl")
+# if accept_new_solution
+#     export_state(solver_config, "bomex_edmf_output")
+# end
+
+# bomex_data = import_state("bomex_edmf_output")
+# using Test
+# @test all(solver_config.Q.data .≈ bomex_data[Prognostic()])
 # @test all(solver_config.dg.state_auxiliary.data .≈ bomex_data[Auxiliary()]) # Has some NaNs
 

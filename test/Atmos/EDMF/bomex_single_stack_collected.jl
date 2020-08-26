@@ -85,7 +85,7 @@ function main()
         solver_config,
         all_data,
         time_data,
-        joinpath(clima_dir, "output", "ss", "ICs"),
+        joinpath(clima_dir, "output", "bomex_ss", "ICs"),
     )
 
     # Define the number of outputs from `t0` to `timeend`
@@ -137,5 +137,5 @@ export_state_plots(
     solver_config,
     all_data,
     time_data,
-    joinpath(clima_dir, "output", "ss", "runtime"),
+    joinpath(clima_dir, "output", "bomex_ss", "runtime"),
 )

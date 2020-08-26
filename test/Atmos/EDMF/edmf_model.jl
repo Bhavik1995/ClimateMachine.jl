@@ -159,10 +159,11 @@ function EDMF(
 end
 
 
-import ClimateMachine.TurbulenceConvection: turbconv_sources
+import ClimateMachine.TurbulenceConvection: turbconv_sources, turbconv_bcs
 
+struct EDMFBCs <: TurbConvBC end
 n_updrafts(m::EDMF{FT, N_up}) where {FT, N_up} = N_up
 n_quad_points(m::Environment{FT, N_quad}) where {FT, N_quad} = N_quad
 turbconv_sources(m::EDMF) = (turbconv_source!,)
+turbconv_bcs(::EDMF) = EDMFBCs()
 
-struct EDMFBCs <: TurbConvBC end
