@@ -11,7 +11,7 @@ using ..VariableTemplates: @vars, Vars, Grad
 
 export TurbulenceConvectionModel, NoTurbConv
 
-export init_aux_turbconv!, turbconv_nodal_update_auxiliary_state!
+export init_aux_turbconv!, turbconv_nodal_update_auxiliary_state!, init_state_prognostic!
 
 import ..BalanceLaws:
     vars_state,
@@ -134,6 +134,15 @@ function integral_set_auxiliary_state!(
 )
     return nothing
 end
+
+function init_state_prognostic!(
+    m::NoTurbConv,
+    bl::BalanceLaw,
+    state,
+    aux,
+    (x, y, z),
+    t,
+) end
 
 include("boundary_conditions.jl")
 include("source.jl")

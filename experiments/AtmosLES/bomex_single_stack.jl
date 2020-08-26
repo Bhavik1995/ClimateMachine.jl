@@ -1,10 +1,4 @@
-using ClimateMachine
-using ClimateMachine.SingleStackUtils
-using ClimateMachine.BalanceLaws: vars_state
-const clima_dir = dirname(dirname(pathof(ClimateMachine)));
-using Plots
-include(joinpath(clima_dir, "docs", "plothelpers.jl"));
-include(joinpath(clima_dir, "experiments", "AtmosLES", "bomex_model.jl"))
+include("bomex_model.jl")
 
 function main()
     # add a command line argument to specify the kind of surface flux
@@ -78,28 +72,6 @@ function main()
         nothing
     end
 
-    all_data = [dict_of_nodal_states(solver_config, ["z"])]
-    time_data = FT[0]
-
-    export_state_plots(
-        solver_config,
-        all_data,
-        time_data,
-        joinpath(clima_dir, "output", "ss", "ICs"),
-    )
-
-    # Define the number of outputs from `t0` to `timeend`
-    n_outputs = 8
-    # This equates to exports every ceil(Int, timeend/n_outputs) time-step:
-    every_x_simulation_time = ceil(Int, timeend / n_outputs)
-
-    cb_data_vs_time =
-        GenericCallbacks.EveryXSimulationTime(every_x_simulation_time) do
-            push!(all_data, dict_of_nodal_states(solver_config, ["z"]))
-            push!(time_data, gettime(solver_config.solver))
-            nothing
-        end
-
     # State variable
     Q = solver_config.Q
     # Volume geometry information
@@ -125,17 +97,9 @@ function main()
     result = ClimateMachine.invoke!(
         solver_config;
         diagnostics_config = dgn_config,
-        user_callbacks = (cbtmarfilter, cb_check_cons, cb_data_vs_time),
+        user_callbacks = (cbtmarfilter, cb_check_cons),
         check_euclidean_distance = true,
     )
-    return solver_config, all_data, time_data
 end
 
-solver_config, all_data, time_data = main()
-
-export_state_plots(
-    solver_config,
-    all_data,
-    time_data,
-    joinpath(clima_dir, "output", "ss", "runtime"),
-)
+main()
