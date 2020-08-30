@@ -770,41 +770,41 @@ function turbconv_source!(
         # pressure tke source from the i'th updraft
         en_s.ρatke += up[i].ρa * dpdz_tke_i
     end
-    l_mix    = mixing_length(m, m.turbconv.mix_len, state, diffusive, aux, t, δ_dyn, ε_trb)
-    K_eddy = m.turbconv.mix_len.c_m * l_mix * sqrt(tke_env)
-    Shear² = diffusive.turbconv.S²
+    # l_mix    = mixing_length(m, m.turbconv.mix_len, state, diffusive, aux, t, δ_dyn, ε_trb)
+    # K_eddy = m.turbconv.mix_len.c_m * l_mix * sqrt(tke_env)
+    # Shear² = diffusive.turbconv.S²
 
-    # second moment production from mean gradients (+ sign here as we have + S in BL form)
-    # production from mean gradient           - Dissipation
-    en_s.ρatke +=
-        gm.ρ *
-        en_a *
-        (
-            K_eddy * Shear² -
-            m.turbconv.mix_len.c_d * sqrt(tke_env) / l_mix * tke_env
-        )
-    en_s.ρaθ_liq_cv +=
-        gm.ρ *
-        en_a *
-        (
-            K_eddy * en_d.∇θ_liq[3] * en_d.∇θ_liq[3] -
-            m.turbconv.mix_len.c_d * sqrt(tke_env) / l_mix * en.ρaθ_liq_cv
-        )
-    en_s.ρaq_tot_cv +=
-        gm.ρ *
-        en_a *
-        (
-            K_eddy * en_d.∇q_tot[3] * en_d.∇q_tot[3] -
-            m.turbconv.mix_len.c_d * sqrt(tke_env) / l_mix * en.ρaq_tot_cv
-        )
-    en_s.ρaθ_liq_q_tot_cv +=
-        gm.ρ *
-        en_a *
-        (
-            K_eddy * en_d.∇θ_liq[3] * en_d.∇q_tot[3] -
-            m.turbconv.mix_len.c_d * sqrt(tke_env) / l_mix *
-            en.ρaθ_liq_q_tot_cv
-        )
+    # # second moment production from mean gradients (+ sign here as we have + S in BL form)
+    # # production from mean gradient           - Dissipation
+    # en_s.ρatke +=
+    #     gm.ρ *
+    #     en_a *
+    #     (
+    #         K_eddy * Shear² -
+    #         m.turbconv.mix_len.c_d * sqrt(tke_env) / l_mix * tke_env
+    #     )
+    # en_s.ρaθ_liq_cv +=
+    #     gm.ρ *
+    #     en_a *
+    #     (
+    #         K_eddy * en_d.∇θ_liq[3] * en_d.∇θ_liq[3] -
+    #         m.turbconv.mix_len.c_d * sqrt(tke_env) / l_mix * en.ρaθ_liq_cv
+    #     )
+    # en_s.ρaq_tot_cv +=
+    #     gm.ρ *
+    #     en_a *
+    #     (
+    #         K_eddy * en_d.∇q_tot[3] * en_d.∇q_tot[3] -
+    #         m.turbconv.mix_len.c_d * sqrt(tke_env) / l_mix * en.ρaq_tot_cv
+    #     )
+    # en_s.ρaθ_liq_q_tot_cv +=
+    #     gm.ρ *
+    #     en_a *
+    #     (
+    #         K_eddy * en_d.∇θ_liq[3] * en_d.∇q_tot[3] -
+    #         m.turbconv.mix_len.c_d * sqrt(tke_env) / l_mix *
+    #         en.ρaθ_liq_q_tot_cv
+    #     )
     # covariance microphysics sources should be applied here
 end;
 
@@ -850,7 +850,7 @@ function flux_second_order!(
 ) where {FT}
     N_up = n_updrafts(turbconv)
 
-    # Aliases:
+#     # Aliases:
     gm = state
     up = state.turbconv.updraft
     en = state.turbconv.environment
@@ -967,36 +967,36 @@ function turbconv_boundary_state!(
     aux_int::Vars,
 ) where {FT}
 
-    turbconv = m.turbconv
-    N_up = n_updrafts(turbconv)
-    up = state⁺.turbconv.updraft
-    en = state⁺.turbconv.environment
-    gm = state⁺
-    gm_a = aux⁺
-    if bctype == 1 # bottom
-        # YAIR - which 'state' should I use here , state⁺ or state⁻  for computation of surface processes
-        zLL = altitude(m, aux_int) # or just zLL = FT(20)
-        upd_a_surf, upd_θ_liq_surf, upd_q_tot_surf,
-        θ_liq_cv, q_tot_cv, θ_liq_q_tot_cv, tke =
-            subdomain_surface_values(turbconv.surface,
-                                     turbconv,
-                                     m,
-                                     gm,
-                                     gm_a,
-                                     zLL)
+    # turbconv = m.turbconv
+    # N_up = n_updrafts(turbconv)
+    # up = state⁺.turbconv.updraft
+    # en = state⁺.turbconv.environment
+    # gm = state⁺
+    # gm_a = aux⁺
+    # if bctype == 1 # bottom
+    #     # YAIR - which 'state' should I use here , state⁺ or state⁻  for computation of surface processes
+    #     zLL = altitude(m, aux_int) # or just zLL = FT(20)
+    #     upd_a_surf, upd_θ_liq_surf, upd_q_tot_surf,
+    #     θ_liq_cv, q_tot_cv, θ_liq_q_tot_cv, tke =
+    #         subdomain_surface_values(turbconv.surface,
+    #                                  turbconv,
+    #                                  m,
+    #                                  gm,
+    #                                  gm_a,
+    #                                  zLL)
 
-        ntuple(N_up) do i
-            up[i].ρaw = FT(0)
-            up[i].ρa = upd_a_surf[i] * gm.ρ
-            up[i].ρaθ_liq = up[i].ρa * upd_θ_liq_surf[i]
-            up[i].ρaq_tot = up[i].ρa * upd_q_tot_surf[i]
-        end
-        en_area = environment_area(gm, gm_a, N_up)
-        en.ρatke = gm.ρ * en_area * tke
-        en.ρaθ_liq_cv = gm.ρ * en_area * θ_liq_cv
-        en.ρaq_tot_cv = gm.ρ * en_area * q_tot_cv
-        en.ρaθ_liq_q_tot_cv = gm.ρ * en_area * θ_liq_q_tot_cv
-    end
+    #     ntuple(N_up) do i
+    #         up[i].ρaw = FT(0)
+    #         up[i].ρa = upd_a_surf[i] * gm.ρ
+    #         up[i].ρaθ_liq = up[i].ρa * upd_θ_liq_surf[i]
+    #         up[i].ρaq_tot = up[i].ρa * upd_q_tot_surf[i]
+    #     end
+    #     en_area = environment_area(gm, gm_a, N_up)
+    #     en.ρatke = gm.ρ * en_area * tke
+    #     en.ρaθ_liq_cv = gm.ρ * en_area * θ_liq_cv
+    #     en.ρaq_tot_cv = gm.ρ * en_area * q_tot_cv
+    #     en.ρaθ_liq_q_tot_cv = gm.ρ * en_area * θ_liq_q_tot_cv
+    # end
 end;
 
 # The boundary conditions for second-order unknowns

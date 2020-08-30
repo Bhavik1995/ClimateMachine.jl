@@ -57,23 +57,23 @@ function subdomain_surface_values(
     upd_a_surf = MArray{Tuple{N_up}, FT}(zeros(FT, N_up))
     upd_θ_liq_surf = MArray{Tuple{N_up}, FT}(zeros(FT, N_up))
     upd_q_tot_surf = MArray{Tuple{N_up}, FT}(zeros(FT, N_up))
-    ntuple(N_up) do i
-        upd_a_surf[i] = FT(m.a_surf / N_up)
-        e_int = internal_energy(atmos, state, aux)
-        ts = PhaseEquil(
-            atmos.param_set,
-            e_int,
-            state.ρ,
-            state.moisture.ρq_tot / state.ρ,
-        )
-        gm_θ_liq = liquid_ice_pottemp(ts)
-        upd_θ_liq_surf[i] =
-            (gm_θ_liq + surface_scalar_coeff[i] * sqrt(max(θ_liq_cv, 0)))
-        upd_q_tot_surf[i] = (
-            gm.moisture.ρq_tot * ρinv +
-            surface_scalar_coeff[i] * sqrt(max(q_tot_cv, 0))
-        )
-    end
+    # ntuple(N_up) do i
+    #     upd_a_surf[i] = FT(m.a_surf / N_up)
+    #     e_int = internal_energy(atmos, state, aux)
+    #     ts = PhaseEquil(
+    #         atmos.param_set,
+    #         e_int,
+    #         state.ρ,
+    #         state.moisture.ρq_tot / state.ρ,
+    #     )
+    #     gm_θ_liq = liquid_ice_pottemp(ts)
+    #     upd_θ_liq_surf[i] =
+    #         (gm_θ_liq + surface_scalar_coeff[i] * sqrt(max(θ_liq_cv, 0)))
+    #     upd_q_tot_surf[i] = (
+    #         gm.moisture.ρq_tot * ρinv +
+    #         surface_scalar_coeff[i] * sqrt(max(q_tot_cv, 0))
+    #     )
+    # end
     return upd_a_surf, upd_θ_liq_surf, upd_q_tot_surf, θ_liq_cv, q_tot_cv, θ_liq_q_tot_cv, tke
 end;
 
