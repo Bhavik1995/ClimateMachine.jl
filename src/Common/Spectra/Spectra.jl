@@ -1,6 +1,6 @@
 module Spectra
 
-export power_spectrum
+export power_spectrum, power_spectrum_zonal, power_spectrum_gcm_2d
 
 using MPI
 using ClimateMachine
@@ -14,5 +14,6 @@ using ..VariableTemplates
 using ..Writers
 
 include("power_spectrum.jl")
+include("power_spectrum_gcm.jl")
 
 end

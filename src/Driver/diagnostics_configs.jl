@@ -29,7 +29,9 @@ Creates an `InterpolationTopology` (either an `InterpolationBrick` or an
 function InterpolationConfiguration(
     driver_config::DriverConfiguration,
     boundaries::Array,
-    resolution::Tuple,
+    resolution::Tuple;
+    lat_range = nothing,
+    lon_range = nothing,
 )
     param_set = driver_config.bl.param_set
     grid = driver_config.grid
@@ -65,17 +67,24 @@ function InterpolationConfiguration(
             nelem = info.nelem_vert,
         )
 
-        axes = (
-            collect(range(
+        if lat_range == nothing && lon_range == nothing
+            ax1 = collect(range(
                 boundaries[1, 1],
                 boundaries[2, 1],
                 step = resolution[1],
-            )),
-            collect(range(
+            ))
+            ax2 = collect(range(
                 boundaries[1, 2],
                 boundaries[2, 2],
                 step = resolution[2],
-            )),
+            ))
+        else
+            ax1 = lat_range
+            ax2 = lon_range
+        end
+        axes = (
+            ax1,
+            ax2,
             collect(range(
                 boundaries[1, 3],
                 boundaries[2, 3],

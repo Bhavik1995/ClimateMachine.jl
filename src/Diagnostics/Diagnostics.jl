@@ -14,7 +14,9 @@ export DiagnosticsGroup,
     setup_atmos_mass_energy_loss,
     setup_dump_state_diagnostics,
     setup_dump_aux_diagnostics,
-    setup_dump_spectra_diagnostics
+    setup_dump_spectra_diagnostics,
+    setup_dump_gcm_spectra_diagnostics
+
 
 using CUDA
 using Dates

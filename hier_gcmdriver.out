@@ -1,0 +1,200 @@
++ module purge
+++ /software/Modules/bin/modulecmd bash purge
++ eval MANPATH=/central/slurm/install/current/share/man/:/usr/local/share/man:/usr/share/man/overrides:/usr/share/man:/opt/ibutils/share/man:/cm/local/apps/environment-modules/current/share/man ';export' 'MANPATH;PATH=/home/elencz/anaconda2/bin:/home/elencz/anaconda2/condabin:/central/slurm/install/current/bin:/usr/lib64/qt-3.3/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/opt/dell/srvadmin/bin:/home/elencz/.local/bin:/home/elencz/bin:/home/elencz/anaconda2' ';export' 'PATH;unset' 'CC;unset' 'CLASSPATH;unset' 'CMAKE_HOME;unset' 'CMAKE_VERSION;unset' 'CPATH;unset' 'CUDA_HOME;unset' 'CUDA_VERSION;unset' 'CXX;unset' 'DAALROOT;unset' 'F77;unset' 'F90;unset' 'GDBSERVER_MIC;unset' 'GDB_CROSS;unset' 'INFOPATH;unset' 'INTEL_HOME;unset' 'INTEL_LICENSE_FILE;unset' 'INTEL_PYTHONHOME;unset' 'INTEL_VERSION;unset' 'IPPROOT;unset' 'I_MPI_CC;unset' 'I_MPI_CXX;unset' 'I_MPI_F77;unset' 'I_MPI_F90;unset' 'I_MPI_ROOT;unset' 'LD_LIBRARY_PATH;unset' 'LD_RUN_PATH;unset' 'LIBRARY_PATH;unset' 'LOADEDMODULES;unset' 'MKLROOT;unset' 'MPM_LAUNCHER;unset' 'NLSPATH;unset' 'OPENMPI_HOME;unset' 'OPENMPI_VERSION;unset' 'PKG_CONFIG_PATH;unset' 'PSTLROOT;unset' 'TBBROOT;unset' '_LMFILES_;'
+++ MANPATH=/central/slurm/install/current/share/man/:/usr/local/share/man:/usr/share/man/overrides:/usr/share/man:/opt/ibutils/share/man:/cm/local/apps/environment-modules/current/share/man
+++ export MANPATH
+++ PATH=/home/elencz/anaconda2/bin:/home/elencz/anaconda2/condabin:/central/slurm/install/current/bin:/usr/lib64/qt-3.3/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/opt/dell/srvadmin/bin:/home/elencz/.local/bin:/home/elencz/bin:/home/elencz/anaconda2
+++ export PATH
+++ unset CC
+++ unset CLASSPATH
+++ unset CMAKE_HOME
+++ unset CMAKE_VERSION
+++ unset CPATH
+++ unset CUDA_HOME
+++ unset CUDA_VERSION
+++ unset CXX
+++ unset DAALROOT
+++ unset F77
+++ unset F90
+++ unset GDBSERVER_MIC
+++ unset GDB_CROSS
+++ unset INFOPATH
+++ unset INTEL_HOME
+++ unset INTEL_LICENSE_FILE
+++ unset INTEL_PYTHONHOME
+++ unset INTEL_VERSION
+++ unset IPPROOT
+++ unset I_MPI_CC
+++ unset I_MPI_CXX
+++ unset I_MPI_F77
+++ unset I_MPI_F90
+++ unset I_MPI_ROOT
+++ unset LD_LIBRARY_PATH
+++ unset LD_RUN_PATH
+++ unset LIBRARY_PATH
+++ unset LOADEDMODULES
+++ unset MKLROOT
+++ unset MPM_LAUNCHER
+++ unset NLSPATH
+++ unset OPENMPI_HOME
+++ unset OPENMPI_VERSION
+++ unset PKG_CONFIG_PATH
+++ unset PSTLROOT
+++ unset TBBROOT
+++ unset _LMFILES_
++ module load julia/1.4.2 hdf5/1.10.1 netcdf-c/4.6.1 openmpi/4.0.1
+++ /software/Modules/bin/modulecmd bash load julia/1.4.2 hdf5/1.10.1 netcdf-c/4.6.1 openmpi/4.0.1
++ eval CPATH=/central/software/OpenMPI/4.0.1//include:/central/software/netcdf-c/4.6.1//include:/software/hdf5/1.10.1/include:/central/software/julia/1.4.2//include ';export' 'CPATH;HDF5_DIR=/software/hdf5/1.10.1' ';export' 'HDF5_DIR;LD_LIBRARY_PATH=/central/software/OpenMPI/4.0.1//lib:/central/software/netcdf-c/4.6.1//lib:/software/hdf5/1.10.1/lib:/central/software/julia/1.4.2//lib' ';export' 'LD_LIBRARY_PATH;LD_RUN_PATH=/central/software/OpenMPI/4.0.1//lib:/central/software/netcdf-c/4.6.1//lib' ';export' 'LD_RUN_PATH;LIBRARY_PATH=/central/software/OpenMPI/4.0.1//lib:/central/software/netcdf-c/4.6.1//lib:/software/hdf5/1.10.1/lib' ';export' 'LIBRARY_PATH;LOADEDMODULES=julia/1.4.2:hdf5/1.10.1:netcdf-c/4.6.1:openmpi/4.0.1' ';export' 'LOADEDMODULES;MANPATH=/central/software/OpenMPI/4.0.1//share/man:/central/software/netcdf-c/4.6.1//share/man:/software/hdf5/1.10.1/share/man:/central/software/julia/1.4.2//share/man:/central/slurm/install/current/share/man/:/usr/local/share/man:/usr/share/man/overrides:/usr/share/man:/opt/ibutils/share/man:/cm/local/apps/environment-modules/current/share/man' ';export' 'MANPATH;OPENMPI_HOME=/central/software/OpenMPI/4.0.1/' ';export' 'OPENMPI_HOME;OPENMPI_VERSION=4.0.1' ';export' 'OPENMPI_VERSION;PATH=/central/software/OpenMPI/4.0.1//bin:/central/software/netcdf-c/4.6.1//bin:/software/hdf5/1.10.1/bin:/central/software/julia/1.4.2//bin:/home/elencz/anaconda2/bin:/home/elencz/anaconda2/condabin:/central/slurm/install/current/bin:/usr/lib64/qt-3.3/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/opt/dell/srvadmin/bin:/home/elencz/.local/bin:/home/elencz/bin:/home/elencz/anaconda2' ';export' 'PATH;_LMFILES_=/software/Modules/modulefiles/developement/julia/1.4.2:/software/Modules/modulefiles/data/hdf5/1.10.1:/software/Modules/modulefiles/data/netcdf-c/4.6.1:/software/Modules/modulefiles/mpi/openmpi/4.0.1' ';export' '_LMFILES_;'
+++ CPATH=/central/software/OpenMPI/4.0.1//include:/central/software/netcdf-c/4.6.1//include:/software/hdf5/1.10.1/include:/central/software/julia/1.4.2//include
+++ export CPATH
+++ HDF5_DIR=/software/hdf5/1.10.1
+++ export HDF5_DIR
+++ LD_LIBRARY_PATH=/central/software/OpenMPI/4.0.1//lib:/central/software/netcdf-c/4.6.1//lib:/software/hdf5/1.10.1/lib:/central/software/julia/1.4.2//lib
+++ export LD_LIBRARY_PATH
+++ LD_RUN_PATH=/central/software/OpenMPI/4.0.1//lib:/central/software/netcdf-c/4.6.1//lib
+++ export LD_RUN_PATH
+++ LIBRARY_PATH=/central/software/OpenMPI/4.0.1//lib:/central/software/netcdf-c/4.6.1//lib:/software/hdf5/1.10.1/lib
+++ export LIBRARY_PATH
+++ LOADEDMODULES=julia/1.4.2:hdf5/1.10.1:netcdf-c/4.6.1:openmpi/4.0.1
+++ export LOADEDMODULES
+++ MANPATH=/central/software/OpenMPI/4.0.1//share/man:/central/software/netcdf-c/4.6.1//share/man:/software/hdf5/1.10.1/share/man:/central/software/julia/1.4.2//share/man:/central/slurm/install/current/share/man/:/usr/local/share/man:/usr/share/man/overrides:/usr/share/man:/opt/ibutils/share/man:/cm/local/apps/environment-modules/current/share/man
+++ export MANPATH
+++ OPENMPI_HOME=/central/software/OpenMPI/4.0.1/
+++ export OPENMPI_HOME
+++ OPENMPI_VERSION=4.0.1
+++ export OPENMPI_VERSION
+++ PATH=/central/software/OpenMPI/4.0.1//bin:/central/software/netcdf-c/4.6.1//bin:/software/hdf5/1.10.1/bin:/central/software/julia/1.4.2//bin:/home/elencz/anaconda2/bin:/home/elencz/anaconda2/condabin:/central/slurm/install/current/bin:/usr/lib64/qt-3.3/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/opt/dell/srvadmin/bin:/home/elencz/.local/bin:/home/elencz/bin:/home/elencz/anaconda2
+++ export PATH
+++ _LMFILES_=/software/Modules/modulefiles/developement/julia/1.4.2:/software/Modules/modulefiles/data/hdf5/1.10.1:/software/Modules/modulefiles/data/netcdf-c/4.6.1:/software/Modules/modulefiles/mpi/openmpi/4.0.1
+++ export _LMFILES_
++ export JULIA_MPI_BINARY=system
++ JULIA_MPI_BINARY=system
++ export JULIA_CUDA_USE_BINARYBUILDER=false
++ JULIA_CUDA_USE_BINARYBUILDER=false
++ source ./helper_mod.sh
++ RUNNAME=gcm_spectrum
++ CLIMA_HOME=/central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl
++ VIZCLIMA_HOME=/central/groups/esm/lenka/VizCLIMA.jl
++ mkdir -p /central/scratch/elencz/
++ CLIMA_OUTPUT=/central/scratch/elencz/output/gcm_spectrum
++ EXPERIMENT=/central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/GCMDriver.jl
++ VIZCLIMA_SCRIPT=/central/groups/esm/lenka/VizCLIMA.jl/src/scripts/general-gcm-notebook-setup.jl
++ EXP_PARAM_FILE=/central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/exp_parameters
++ directory_structure /central/scratch/elencz/output/gcm_spectrum
++ CLIMA_RESTART=/central/scratch/elencz/output/gcm_spectrum/restart
++ CLIMA_NETCDF=/central/scratch/elencz/output/gcm_spectrum/netcdf
++ CLIMA_LOG=/central/scratch/elencz/output/gcm_spectrum/log
++ CLIMA_ANALYSIS=/central/scratch/elencz/output/gcm_spectrum/analysis
++ mkdir -p /central/scratch/elencz/output/gcm_spectrum
++ mkdir -p /central/scratch/elencz/output/gcm_spectrum/restart
++ mkdir -p /central/scratch/elencz/output/gcm_spectrum/netcdf
++ mkdir -p /central/scratch/elencz/output/gcm_spectrum/analysis
++ mkdir -p /central/scratch/elencz/output/gcm_spectrum/log
++ PERF_LOGFILE=/central/scratch/elencz/output/gcm_spectrum/log/experiments_performance_log
++ printf '%-70s %-20s %-15s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-150s \n' driver sim_date wall_time sim_days res_h res_v dom_height CFL FT GPU Mem solver_details
++ julia --project=/central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl -e 'using Pkg; Pkg.instantiate()'
++ julia --project=/central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl -e 'using Pkg; Pkg.precompile()'
+Precompiling project...
++ read -u3 -r line
++ write_into_runfile_from_list 'n_days::FT 100' gcm_spectrum /central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/GCMDriver.jl CLIMA_RUNFILE
++ line='n_days::FT 100'
++ runname=gcm_spectrum
+++ dirname /central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/GCMDriver.jl
++ exp_folder=/central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver
+++ basename /central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/GCMDriver.jl
++ default_exp_runfile=GCMDriver.jl
++ pars=(${line// / })
++ inst_name=gcm_spectrum
++ (( i=0 ))
++ (( i<2 ))
++ inst_name=gcm_spectrum_n_days::FT
++ (( i++ ))
++ (( i<2 ))
++ inst_name=gcm_spectrum_n_days::FT_100
++ (( i++ ))
++ (( i<2 ))
+++ sed 's/[():"]//g'
+++ echo gcm_spectrum_n_days::FT_100
++ inst_name_clean=gcm_spectrum_n_daysFT_100
++ (( i=0 ))
++ (( i<2 ))
++ par_n[$(( $i / 2 ))]=n_days::FT
++ par_v[$(( $i / 2 ))]=100
++ (( i+=2 ))
++ (( i<2 ))
++ new_exp_runfile=GCMDriver_gcm_spectrum_n_daysFT_100.jl
++ rm -f /central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/GCMDriver_gcm_spectrum_n_daysFT_100.jl
++ cp /central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/GCMDriver.jl /central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/GCMDriver_gcm_spectrum_n_daysFT_100.jl
++ (( i=0 ))
++ (( i<1 ))
++ sed 's/n_days::FT =.*/n_days::FT = 100/' /central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/GCMDriver_gcm_spectrum_n_daysFT_100.jl
++ mv /central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/run_tmp /central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/GCMDriver_gcm_spectrum_n_daysFT_100.jl
++ (( i++ ))
++ (( i<1 ))
++ sed 's/exp_name =.*/exp_name = "gcm_spectrum_n_daysFT_100"/' /central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/GCMDriver_gcm_spectrum_n_daysFT_100.jl
++ mv /central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/run_tmp /central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/GCMDriver_gcm_spectrum_n_daysFT_100.jl
++ new_exp_runfile_path=/central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/GCMDriver_gcm_spectrum_n_daysFT_100.jl
++ eval CLIMA_RUNFILE=/central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/GCMDriver_gcm_spectrum_n_daysFT_100.jl
+++ CLIMA_RUNFILE=/central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/GCMDriver_gcm_spectrum_n_daysFT_100.jl
+++ date +%m-%d-%y-%T
++ t_date=09-16-20-08:18:50
+++ date +%s
++ t_start=1600269530
++ echo '1600269530: Running /central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/GCMDriver_gcm_spectrum_n_daysFT_100.jl, storing output at /central/scratch/elencz/output/gcm_spectrum'
+1600269530: Running /central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/GCMDriver_gcm_spectrum_n_daysFT_100.jl, storing output at /central/scratch/elencz/output/gcm_spectrum
++ mpiexec julia --project=/central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl /central/groups/esm/lenka/ClimaTests5/cloned/ClimateMachine.jl/experiments/AtmosGCM/GCMDriver/GCMDriver_gcm_spectrum_n_daysFT_100.jl --experiment=heldsuarez --diagnostics 0.1shours --monitor-courant-numbers 6shours --output-dir /central/scratch/elencz/output/gcm_spectrum/netcdf --checkpoint-at-end --checkpoint-dir /central/scratch/elencz/output/gcm_spectrum/restart --init-moisture-profile zero --checkpoint 6shours --surface-flux bulk
+┌ Info: Model composition
+│     param_set = EarthParameterSet()
+│     problem = HeldSuarezProblem{Tuple{AtmosBC{Impenetrable{FreeSlip},BulkFormulaEnergy{var"#3#7"{Float64},var"#4#8"{Varying_SST_TJ16{EarthParameterSet,SphericalOrientation,EquilMoist{Float64}}}},BulkFormulaMoisture{var"#5#9"{Float64},var"#6#10"{Varying_SST_TJ16{EarthParameterSet,SphericalOrientation,EquilMoist{Float64}}}},ImpermeableTracer,ClimateMachine.TurbulenceConvection.NoTurbConvBC},AtmosBC{Impenetrable{FreeSlip},Insulating,Impermeable,ImpermeableTracer,ClimateMachine.TurbulenceConvection.NoTurbConvBC}},typeof(init_gcm_experiment!),var"#15#16",DeterministicPerturbation,HeldSuarezBaseState,ZeroMoistureProfile}((AtmosBC{Impenetrable{FreeSlip},BulkFormulaEnergy{var"#3#7"{Float64},var"#4#8"{Varying_SST_TJ16{EarthParameterSet,SphericalOrientation,EquilMoist{Float64}}}},BulkFormulaMoisture{var"#5#9"{Float64},var"#6#10"{Varying_SST_TJ16{EarthParameterSet,SphericalOrientation,EquilMoist{Float64}}}},ImpermeableTracer,ClimateMachine.TurbulenceConvection.NoTurbConvBC}(Impenetrable{FreeSlip}(FreeSlip()), BulkFormulaEnergy{var"#3#7"{Float64},var"#4#8"{Varying_SST_TJ16{EarthParameterSet,SphericalOrientation,EquilMoist{Float64}}}}(var"#3#7"{Float64}(0.0011), var"#4#8"{Varying_SST_TJ16{EarthParameterSet,SphericalOrientation,EquilMoist{Float64}}}(Varying_SST_TJ16{EarthParameterSet,SphericalOrientation,EquilMoist{Float64}}(EarthParameterSet(), SphericalOrientation(), EquilMoist{Float64}(3, 0.1)))), BulkFormulaMoisture{var"#5#9"{Float64},var"#6#10"{Varying_SST_TJ16{EarthParameterSet,SphericalOrientation,EquilMoist{Float64}}}}(var"#5#9"{Float64}(0.0011), var"#6#10"{Varying_SST_TJ16{EarthParameterSet,SphericalOrientation,EquilMoist{Float64}}}(Varying_SST_TJ16{EarthParameterSet,SphericalOrientation,EquilMoist{Float64}}(EarthParameterSet(), SphericalOrientation(), EquilMoist{Float64}(3, 0.1)))), ImpermeableTracer(), ClimateMachine.TurbulenceConvection.NoTurbConvBC()), AtmosBC{Impenetrable{FreeSlip},Insulating,Impermeable,ImpermeableTracer,ClimateMachine.TurbulenceConvection.NoTurbConvBC}(Impenetrable{FreeSlip}(FreeSlip()), Insulating(), Impermeable(), ImpermeableTracer(), ClimateMachine.TurbulenceConvection.NoTurbConvBC())), init_gcm_experiment!, var"#15#16"(), DeterministicPerturbation(), HeldSuarezBaseState(), ZeroMoistureProfile())
+│     orientation = SphericalOrientation()
+│     ref_state = HydrostaticState{DecayingTemperatureProfile{Float64},Float64}(DecayingTemperatureProfile{Float64}(290.0, 220.0, 8000.0), 0.0)
+│     turbulence = ConstantKinematicViscosity{Float64,WithoutDivergence}(0.0, WithoutDivergence())
+│     turbconv = ClimateMachine.TurbulenceConvection.NoTurbConv()
+│     hyperdiffusion = EquilMoistBiharmonic{Float64}(28800.0, 28800.0)
+│     viscoussponge = NoViscousSponge()
+│     moisture = EquilMoist{Float64}(3, 0.1)
+│     precipitation = NoPrecipitation()
+│     radiation = NoRadiation()
+│     source = (Gravity(), Coriolis(), held_suarez_forcing!)
+│     tracers = NoTracers()
+└     data_config = nothing
+┌ Info: Establishing Atmos GCM configuration for HeldSuarez
+│     precision        = Float64
+│     polynomial order = 3
+│     #horiz elems     = 12
+│     #vert elems      = 6
+│     domain height    = 3.00e+04 m
+│     MPI ranks        = 1
+│     min(Δ_horz)      = 163020.23 m
+└     min(Δ_vert)      = 1381.97 m
+[ Info: Initializing HeldSuarez
+┌ Info: Starting HeldSuarez
+│     dt              = 4.77483e+01
+│     timeend         = 8640000.00
+│     number of steps = 180949
+└     norm(Q)         = 7.5565206770567375e+13
+┌ Info: Diagnostics: AtmosGCMDefault
+└     initializing at     0.00
+┌ Info: Diagnostics: Spectra
+└     initializing at     0.00
+┌ Info: Update
+│     simtime =    47.75 / 8640000.00
+│     runtime = 00:01:28
+└     norm(Q) = 7.5565263198137219e+13
+┌ Info: Diagnostics: AtmosGCMDefault
+└     collecting at   381.99
+┌ Info: Diagnostics: Spectra
+└     collecting at   381.99
+┌ Info: Diagnostics: AtmosGCMDefault
+└     collecting at   763.97
+┌ Info: Diagnostics: Spectra
+└     collecting at   763.97
+┌ Info: Update
+│     simtime =   811.72 / 8640000.00
+│     runtime = 00:02:34
+└     norm(Q) = 7.5566254781638172e+13
+┌ Info: Diagnostics: AtmosGCMDefault
+└     collecting at  1145.96
+┌ Info: Diagnostics: Spectra
+└     collecting at  1145.96
+slurmstepd: error: *** JOB 11329722 ON hpc-25-10 CANCELLED AT 2020-09-16T08:24:49 ***
