@@ -1,20 +1,24 @@
 """
-    Diagnostics
+    DiagnosticsMech
 
-Accumulate mean fields and covariance statistics on the computational grid.
+This module provides the infrastructure to extract diagnostics from a
+ClimateMachine simulation. Two key abstractions are defined: diagnostic
+variables and diagnostic groups. The `Diagnostics` module makes use of
+these to define many standard variables and groups which may be used
+directly by experiments. This module may be used by experiments to define
+specialized variables and groups.
 """
-module Diagnostics
+module DiagnosticsMech
 
-export DiagnosticsGroup,
-    setup_atmos_default_diagnostics,
-    setup_atmos_core_diagnostics,
-    setup_atmos_default_perturbations,
-    setup_atmos_refstate_perturbations,
-    setup_atmos_turbulence_stats,
-    setup_atmos_mass_energy_loss,
-    setup_dump_state_diagnostics,
-    setup_dump_aux_diagnostics,
-    setup_dump_spectra_diagnostics
+export DiagnosticVar,
+    @intermediate_value,
+    @intermediate_values,
+    @pointwise_diagnostic,
+    @pointwise_diagnostic_impl,
+    @horizontal_average,
+    @horizontal_average_impl,
+    DiagnosticsGroup,
+    DiagnosticsGroupParams
 
 using CUDA
 using Dates
@@ -73,20 +77,8 @@ function init(
     Settings.output_dir = output_dir
 end
 
-include("variables.jl")
 include("helpers.jl")
-include("atmos_common.jl")
-include("thermo.jl")
+include("variables.jl")
 include("groups.jl")
 
-"""
-    __init()__
-
-Module initialization function. Currently, only fills in all currently
-defined diagnostic variables.
-"""
-function __init__()
-    setup_variables()
-end
-
-end # module Diagnostics
+end # module DiagnosticsMech

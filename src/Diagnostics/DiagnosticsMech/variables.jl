@@ -1,8 +1,6 @@
 # TODO:
-# - an intermediate value that is available to diagnostic variables, e.g. thermodynamic state
-# - ordering?
+# - scalars and others from #1596, especially core (conditional)
 # - diagnostics from a specialized kernel, e.g. vorticity
-# - a derived diagnostic, e.g. u*u -- specify a diagnostic that defines two or more outputs?
 
 """
     States
