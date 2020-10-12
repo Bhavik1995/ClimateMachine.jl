@@ -1,6 +1,6 @@
 module Atmos
 
-export AtmosModel, AtmosAcousticLinearModel, AtmosAcousticGravityLinearModel, HLLCNumericalFlux, RoeNumericalFlux, RoeNumericalFluxMoist
+export AtmosModel, AtmosAcousticLinearModel, AtmosAcousticGravityLinearModel, HLLCNumericalFlux, RoeNumericalFlux, RoeNumericalFluxMoist, LMARNumericalFlux
 
 using CLIMAParameters
 using CLIMAParameters.Planet: grav, cp_d, R_v, LH_v0, e_int_v0
@@ -75,7 +75,7 @@ import ..DGMethods.NumericalFluxes:
     numerical_flux_first_order!,
     NumericalFluxFirstOrder
 using ..DGMethods.NumericalFluxes:
-    RoeNumericalFlux, HLLCNumericalFlux, RusanovNumericalFlux, RoeNumericalFluxMoist
+    RoeNumericalFlux, HLLCNumericalFlux, RusanovNumericalFlux, LMARNumericalFlux
 
 import ..Courant: advective_courant, nondiffusive_courant, diffusive_courant
 
@@ -902,230 +902,6 @@ function RoeAverage(ρ⁻, ρ⁺, x⁻, x⁺)
     return (sqrt(ρ⁻) * x⁻ + sqrt(ρ⁺) * x⁺) / (sqrt(ρ⁻) + sqrt(ρ⁺))
 end
 
-function numerical_flux_first_order!(
-    numerical_flux::RoeNumericalFluxMoist,
-    balance_law::AtmosModel,
-    fluxᵀn::Vars{S},
-    normal_vector::SVector,
-    state_conservative⁻::Vars{S},
-    state_auxiliary⁻::Vars{A},
-    state_conservative⁺::Vars{S},
-    state_auxiliary⁺::Vars{A},
-    t,
-    direction,
-) where {S, A}
-
-    numerical_flux_first_order!(
-        CentralNumericalFluxFirstOrder(),
-        balance_law,
-        fluxᵀn,
-        normal_vector,
-        state_conservative⁻,
-        state_auxiliary⁻,
-        state_conservative⁺,
-        state_auxiliary⁺,
-        t,
-        direction,
-    )
-
-    FT = eltype(fluxᵀn)
-    param_set = balance_law.param_set
-    _cv_d::FT = cv_d(param_set)
-    _T_0::FT = T_0(param_set)
-    γ::FT = cp_d(param_set) / cv_d(param_set)
-    _e_int_v0 = e_int_v0(param_set)
-    Φ = gravitational_potential(balance_law, state_auxiliary⁻)
-
-    ρ⁻ = state_conservative⁻.ρ
-    ρu⁻ = state_conservative⁻.ρu
-    ρe⁻ = state_conservative⁻.ρe
-    ρq_tot⁻ = state_conservative⁻.moisture.ρq_tot
-    
-    u⁻ = ρu⁻ / ρ⁻
-     e⁻ = ρe⁻ / ρ⁻
-    ts⁻ = recover_thermo_state(balance_law, state_conservative⁻, state_auxiliary⁻)
-    h⁻ = total_specific_enthalpy(ts⁻, e⁻)
-    qt⁻ = ρq_tot⁻ / ρ⁻
-    c⁻ = soundspeed_air(ts⁻)
-
-    ρ⁺ = state_conservative⁺.ρ
-    ρu⁺ = state_conservative⁺.ρu
-    ρe⁺ = state_conservative⁺.ρe
-    ρq_tot⁺ = state_conservative⁺.moisture.ρq_tot
-
-    u⁺ = ρu⁺ / ρ⁺
-    e⁺ = ρe⁺ / ρ⁺
-    ts⁺ = recover_thermo_state(balance_law, state_conservative⁺, state_auxiliary⁺)
-    h⁺ = total_specific_enthalpy(ts⁺, e⁺)
-    qt⁺ = ρq_tot⁺ / ρ⁺
-    c⁺ = soundspeed_air(ts⁺)
-    ũ = RoeAverage(ρ⁻, ρ⁺, u⁻, u⁺)
-    e_tot = RoeAverage(ρ⁻, ρ⁺, e⁻, e⁺)
-    h̃ = RoeAverage(ρ⁻, ρ⁺, h⁻, h⁺)
-    qt = RoeAverage(ρ⁻, ρ⁺, qt⁻, qt⁺)
-    ρ = sqrt(ρ⁻ * ρ⁺)
-    e_int⁻ = internal_energy(ρ⁻, ρe⁻, ρu⁻, gravitational_potential(balance_law, state_auxiliary⁻))
-    e_int⁺ = internal_energy(ρ⁺, ρe⁺, ρu⁺, gravitational_potential(balance_law, state_auxiliary⁺))
-    e_int = RoeAverage(ρ⁻, ρ⁺, e_int⁻, e_int⁺)
-    #e_int = internal_energy(ρ, ρ * e_tot, ρ * ũ, gravitational_potential(balance_law, state_auxiliary⁻)) 
-    ts = PhaseEquil(
-        param_set,
-        e_int,
-        ρ,
-        qt,
-        balance_law.moisture.maxiter,
-        balance_law.moisture.tolerance,
-    )
-    #=ts⁻ = PhaseEquil(
-        param_set,
-        e_int⁻,
-        ρ⁻,
-        qt⁻,
-        balance_law.moisture.maxiter,
-        balance_law.moisture.tolerance,
-    )
-    ts⁺ = PhaseEquil(
-        param_set,
-        e_int⁺,
-        ρ⁺,
-        qt⁺,
-        balance_law.moisture.maxiter,
-        balance_law.moisture.tolerance,
-    )=#
-    c̃ = sqrt(RoeAverage(ρ⁻, ρ⁺, c⁻^2, c⁺^2))
-    _cv_m = cv_m(ts)
-    R_m = gas_constant_air(ts)
-    _cp_m = cp_m(ts)
-    gamma = _cp_m / _cv_m
-    #c̃ = sqrt((gamma - 1) * (h̃ - 0.5 * ũ' * ũ))
-    #_cv_m⁻ = cv_m(ts⁻)
-    #_cv_m⁺ = cv_m(ts⁺)
-    #_cv_m = RoeAverage(ρ⁻, ρ⁺, _cv_m⁻, _cv_m⁺)    
-    # chosen by fair dice roll
-    # guaranteed to be random
-    ω = FT(π) / 3
-    δ = FT(π) / 5
-    random_unit_vector = SVector(sin(ω) * cos(δ), cos(ω) * cos(δ), sin(δ))
-    # tangent space basis
-    τ1 = random_unit_vector × normal_vector
-    τ2 = τ1 × normal_vector
-    ũᵀn⁻ = u⁻' * normal_vector
-    ũᵀn⁺ = u⁺' * normal_vector
-    ũᵀn = ũ' * normal_vector
-    ũc̃⁻ = ũ + c̃ * normal_vector
-    ũc̃⁺ = ũ - c̃ * normal_vector
-    e_kin_pot = h̃ - _e_int_v0 * qt - _cp_m*c̃^2/R_m
-    Mach⁺ = sqrt(u⁺' * u⁺) / c⁺
-    Mach⁻ = sqrt(u⁻' * u⁻) / c⁻
-    Mach = (Mach⁺ + Mach⁻) /2 #RoeAverage(ρ⁻, ρ⁺, Mach⁻, Mach⁺)
-    Mcut = FT(0)
-    c̃_LM = c̃ #* min(Mach * sqrt(4 + (1 - Mach^2)^2) / (1 + Mach^2), 1) #max(min(Mach,1), Mcut)
-    #Standard Roe
-    Λ = SDiagonal(
-        abs(ũᵀn - c̃_LM),
-        abs(ũᵀn),
-        abs(ũᵀn),
-        abs(ũᵀn),
-        abs(ũᵀn + c̃_LM),
-	abs(ũᵀn),
-    )
-    
-    #Harten Hyman Fix 1
-    #=Λ = SDiagonal(
-        max(abs(ũᵀn - c̃_LM),max(0, ũᵀn - c̃_LM - (u⁻' * normal_vector - c⁻), u⁺' * normal_vector - c⁺ - (ũᵀn - c̃_LM))),
-	max(abs(ũᵀn),max(0, ũᵀn - (u⁻' * normal_vector), u⁺' * normal_vector - (ũᵀn))),
-	max(abs(ũᵀn),max(0, ũᵀn - (u⁻' * normal_vector), u⁺' * normal_vector - (ũᵀn))),
-	max(abs(ũᵀn),max(0, ũᵀn - (u⁻' * normal_vector), u⁺' * normal_vector - (ũᵀn))),
-	max(abs(ũᵀn + c̃_LM),max(0, ũᵀn + c̃_LM - (u⁻' * normal_vector + c⁻), u⁺' * normal_vector + c⁺ - (ũᵀn + c̃_LM))),
-	max(abs(ũᵀn),max(0, ũᵀn - (u⁻' * normal_vector), u⁺' * normal_vector - (ũᵀn))),
-    )=#
-
-    #Pseudo LeVeque Fix
-    #=δ_L_1 = max(0, ũᵀn - ũᵀn⁻)
-    δ_L_2 = max(0, ũᵀn - c̃ - (ũᵀn⁻- c⁻))
-    δ_L_3 = max(0, ũᵀn + c̃ - (ũᵀn⁻+ c⁻))
-    δ_R_1 = max(0, ũᵀn⁺ - ũᵀn)
-    δ_R_2 = max(0, ũᵀn⁺ - c⁺ - (ũᵀn - c̃))
-    δ_R_3 = max(0, ũᵀn⁺ + c⁺ - (ũᵀn + c̃))
-    if (ũᵀn < δ_L_1 && ũᵀn > - δ_R_1)
-       qa1 =( (δ_L_1 - δ_R_1) * ũᵀn + 2 * δ_L_1 * δ_R_1) / (δ_L_1 + δ_R_1)
-    else
-       qa1 = abs(ũᵀn)
-    end
-    if (ũᵀn - c̃ < δ_L_2 && ũᵀn - c̃ > - δ_R_2)
-       qa2 =( (δ_L_2 - δ_R_2) * (ũᵀn - c̃) + 2 * δ_L_2 * δ_R_2) / (δ_L_2 + δ_R_2)
-    else
-       qa2 = abs(ũᵀn - c̃)
-    end
-    if (ũᵀn + c̃ < δ_L_3 && ũᵀn + c̃> - δ_R_3)
-       qa3 =( (δ_L_3 - δ_R_3) * (ũᵀn + c̃) + 2 * δ_R_3 * δ_R_3) / (δ_L_3 + δ_R_3)
-    else
-       qa3 = abs(ũᵀn + c̃)
-    end
-    Λ = SDiagonal(
-        qa2,
-        qa1,
-        qa1,
-        qa1,
-        qa3,
-        qa1,
-    )=#
-
-    #PosPreserving with LeVeque
-    #=b_L = min(ũᵀn - c̃, ũᵀn⁻- c⁻)
-    b_R = max(ũᵀn + c̃, ũᵀn⁺+ c⁺)
-    b⁻ = min(0,b_L)
-    b⁺ = max(0,b_R)
-    δ_L_1 = max(0, ũᵀn - b⁻)
-    δ_L_2 = max(0, ũᵀn - c̃ - b⁻)
-    δ_L_3 = max(0, ũᵀn + c̃ - b⁻)
-    δ_R_1 = max(0, b⁺ - ũᵀn)
-    δ_R_2 = max(0, b⁺ - (ũᵀn - c̃))
-    δ_R_3 = max(0, b⁺ - (ũᵀn + c̃))
-    if (ũᵀn < δ_L_1 && ũᵀn > - δ_R_1)
-       qa1 =( (δ_L_1 - δ_R_1) * ũᵀn + 2 * δ_L_1 * δ_R_1) / (δ_L_1 + δ_R_1)
-    else
-       qa1 = abs(ũᵀn)
-    end
-    if (ũᵀn - c̃ < δ_L_2 && ũᵀn - c̃ > - δ_R_2)
-       qa2 =( (δ_L_2 - δ_R_2) * (ũᵀn - c̃) + 2 * δ_L_2 * δ_R_2) / (δ_L_2 + δ_R_2)
-    else
-       qa2 = abs(ũᵀn - c̃)
-    end
-    if (ũᵀn + c̃ < δ_L_3 && ũᵀn + c̃> - δ_R_3)
-       qa3 =( (δ_L_3 - δ_R_3) * (ũᵀn + c̃) + 2 * δ_R_3 * δ_R_3) / (δ_L_3 + δ_R_3)
-    else
-       qa3 = abs(ũᵀn + c̃)
-    end
-    Λ = SDiagonal(
-        qa2,
-        qa1,
-        qa1,
-        qa1,
-        qa3,
-        qa1,
-    )=#
-
-
- 
-
-    M = hcat(
-        SVector(1, ũc̃⁺[1], ũc̃⁺[2], ũc̃⁺[3], h̃ - c̃ * ũᵀn, qt),
-	SVector(0, τ1[1], τ1[2], τ1[3], τ1' * ũ, 0),
-        SVector(0, τ2[1], τ2[2], τ2[3], τ2' * ũ, 0),
-	SVector(1, ũ[1], ũ[2], ũ[3], ũ' * ũ / 2 + Φ - _T_0 * _cv_m, 0),
-	SVector(1, ũc̃⁻[1], ũc̃⁻[2], ũc̃⁻[3], h̃ + c̃ * ũᵀn, qt),
-	SVector(0, 0, 0, 0, _e_int_v0, 1)
-    )
-    Δρ = ρ⁺ - ρ⁻
-    Δρu = ρu⁺ - ρu⁻
-    Δρe = ρe⁺ - ρe⁻
-    Δρq_tot = ρq_tot⁺ - ρq_tot⁻
-    Δstate = SVector(Δρ, Δρu[1], Δρu[2], Δρu[3], Δρe, Δρq_tot)
-    
-    parent(fluxᵀn) .-= M * Λ * (M \ Δstate) / 2
-    #@info parent(fluxᵀn)
-end
 """
     NumericalFluxFirstOrder()
         ::HLLCNumericalFlux,
@@ -1277,6 +1053,94 @@ function numerical_flux_first_order!(
         parent(fluxᵀn) .= flux⁰⁺
     else # 0 > S⁺
         parent(fluxᵀn) .= fluxᵀn⁺
+    end
+end
+
+function numerical_flux_first_order!(
+    numerical_flux::LMARNumericalFlux,
+    balance_law::AtmosModel,
+    fluxᵀn::Vars{S},
+    normal_vector::SVector,
+    state_prognostic⁻::Vars{S},
+    state_auxiliary⁻::Vars{A},
+    state_prognostic⁺::Vars{S},
+    state_auxiliary⁺::Vars{A},
+    t,
+    direction,
+) where {S, A}
+
+    FT = eltype(fluxᵀn)
+    param_set = balance_law.param_set
+
+    ρ⁻ = state_prognostic⁻.ρ
+    ρu⁻ = state_prognostic⁻.ρu
+    ρe⁻ = state_prognostic⁻.ρe
+    ts⁻ = recover_thermo_state(
+        balance_law,
+        balance_law.moisture,
+        state_prognostic⁻,
+        state_auxiliary⁻,
+    )
+
+    u⁻ = ρu⁻ / ρ⁻
+    e⁻ = ρe⁻ / ρ⁻
+    uᵀn⁻ = u⁻' * normal_vector
+    p⁻ = air_pressure(ts⁻)
+    if balance_law.ref_state isa HydrostaticState
+        p⁻ -= state_auxiliary⁻.ref_state.p 
+    end
+    c⁻ = soundspeed_air(ts⁻)
+    h⁻ = total_specific_enthalpy(ts⁻, e⁻)
+
+    ρ⁺ = state_prognostic⁺.ρ
+    ρu⁺ = state_prognostic⁺.ρu
+    ρe⁺ = state_prognostic⁺.ρe
+    ts⁺ = recover_thermo_state(
+        balance_law,
+        balance_law.moisture,
+        state_prognostic⁺,
+        state_auxiliary⁺,
+    )
+    u⁺ = ρu⁺ / ρ⁺
+    e⁺ = ρe⁺ / ρ⁺
+    uᵀn⁺ = u⁺' * normal_vector
+    p⁺ = air_pressure(ts⁺)
+    if balance_law.ref_state isa HydrostaticState
+        p⁺ -= state_auxiliary⁺.ref_state.p 
+    end
+    c⁺ = soundspeed_air(ts⁺)
+    h⁺ = total_specific_enthalpy(ts⁺, e⁺)
+
+    # Eqn (49), (50), β the tuning parameter
+    β = FT(1)
+    u_half = 1/2 * (uᵀn⁺ + uᵀn⁻) - β * 1/(ρ⁻ + ρ⁺)/c⁻*(p⁺ - p⁻)
+    p_half = 1/2 * (p⁺ + p⁻) - β * ((ρ⁻ + ρ⁺) * c⁻)/4 * (uᵀn⁺ - uᵀn⁻)
+    
+    # Eqn (46), (47)
+    ρ_b = u_half > FT(0) ? ρ⁻ : ρ⁺
+    ρu_b = u_half > FT(0) ? ρu⁻ : ρu⁺
+    ρh_b = u_half > FT(0) ? ρ⁻*h⁻ : ρ⁺*h⁺
+ 
+    # Update fluxes Eqn (18)
+    fluxᵀn.ρ  = ρ_b * u_half 
+    fluxᵀn.ρu = ρu_b * u_half .+ p_half * normal_vector
+    fluxᵀn.ρe = ρh_b * u_half
+
+    if balance_law.moisture isa EquilMoist
+        ρq⁻ = state_prognostic⁻.moisture.ρq_tot
+        q⁻ = ρq⁻ / ρ⁻
+        ρq⁺ = state_prognostic⁺.moisture.ρq_tot
+        q⁺ = ρq⁺ / ρ⁺
+        ρq_b = u_half > FT(0) ? ρq⁻ : ρq⁺
+        fluxᵀn.moisture.ρq_tot = ρq_b * u_half 
+    end
+    if !(balance_law.tracers isa NoTracers)
+        ρχ⁻ = state_prognostic⁻.tracers.ρχ
+        χ⁻ = ρχ⁻ / ρ⁻
+        ρχ⁺ = state_prognostic⁺.tracers.ρχ
+        χ⁺ = ρχ⁺ / ρ⁺
+        ρχ_b = u_half > FT(0) ? ρχ⁻ : ρχ⁺
+        fluxᵀn.tracers.ρχ = ρχ_b * u_half 
     end
 end
 
