@@ -3,10 +3,10 @@
 
 This module provides the infrastructure to extract diagnostics from a
 ClimateMachine simulation. Two key abstractions are defined: diagnostic
-variables and diagnostic groups. The `Diagnostics` module makes use of
+variables and diagnostic groups. The `StdDiagnostics` module makes use of
 these to define many standard variables and groups which may be used
-directly by experiments. This module may be used by experiments to define
-specialized variables and groups.
+directly by experiments. `DiagnosticsMech` may be used by experiments to
+define specialized variables and groups.
 """
 module DiagnosticsMech
 
@@ -18,6 +18,7 @@ export DiagnosticVar,
     @horizontal_average,
     @horizontal_average_impl,
     DiagnosticsGroup,
+    @diagnostics_group,
     DiagnosticsGroupParams
 
 using CUDA
@@ -25,26 +26,28 @@ using Dates
 using FileIO
 using JLD2
 using KernelAbstractions
+using MacroTools
 using MPI
 using OrderedCollections
 using Printf
 using StaticArrays
-import KernelAbstractions: CPU
 
+using ..BalanceLaws
 using ..ConfigTypes
 using ..DGMethods
-using ..BalanceLaws
+using ..GenericCallbacks
 using ..Mesh.Interpolation
 using ..MPIStateArrays
+using ..Spectra
+using ..TicToc
 using ..VariableTemplates
 using ..Writers
-import ..GenericCallbacks
-using ..TicToc
-using ..Spectra
 
 using CLIMAParameters
 using CLIMAParameters.Planet: planet_radius
 
+# Container to store simulation information necessary for all
+# diagnostics groups.
 Base.@kwdef mutable struct Diagnostic_Settings
     mpicomm::MPI.Comm = MPI.COMM_WORLD
     param_set::Union{Nothing, AbstractParameterSet} = nothing
@@ -58,8 +61,8 @@ const Settings = Diagnostic_Settings()
 """
     init(mpicomm, param_set, dg, Q, starttime, output_dir)
 
-Initialize the diagnostics collection module -- save the parameters into
-`Settings`.
+Save the parameters into `Settings`, a container for simulation
+information necessary for all diagnostics groups.
 """
 function init(
     mpicomm::MPI.Comm,

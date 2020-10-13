@@ -20,6 +20,7 @@ end
     states.prognostic.ρu[2] / states.prognostic.ρ
 end
 
+
 @pointwise_diagnostic(
     "w",
     AtmosGCMConfigType,
