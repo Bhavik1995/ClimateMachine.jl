@@ -758,19 +758,23 @@ end
         @test all(internal_energy.(ts) .≈ e_int)
         @test all(air_density.(ts) .≈ ρ)
 
-        ts_p = PhaseDry_pT.(Ref(param_set), p, T)
-        @test all(internal_energy.(ts_p) .≈ internal_energy.(Ref(param_set), T))
-        @test all(air_density.(ts_p) .≈ ρ)
+        ts_pT = PhaseDry_pT.(Ref(param_set), p, T)
+        @test all(internal_energy.(ts_pT) .≈ internal_energy.(Ref(param_set), T))
+        @test all(air_density.(ts_pT) .≈ ρ)
 
         θ_dry = dry_pottemp.(Ref(param_set), T, ρ)
-        ts_p = PhaseDry_pθ.(Ref(param_set), p, θ_dry)
-        @test all(internal_energy.(ts_p) .≈ internal_energy.(Ref(param_set), T))
-        @test all(air_density.(ts_p) .≈ ρ)
+        ts_pθ = PhaseDry_pθ.(Ref(param_set), p, θ_dry)
+        @test all(internal_energy.(ts_pθ) .≈ internal_energy.(Ref(param_set), T))
+        @test all(air_density.(ts_pθ) .≈ ρ)
 
-        ts = PhaseDry_ρT.(Ref(param_set), ρ, T)
+        ts_ρT = PhaseDry_ρT.(Ref(param_set), ρ, T)
+        @test all(air_density.(ts_ρT) .≈ air_density.(ts))
+        @test all(internal_energy.(ts_ρT) .≈ internal_energy.(ts))
 
-        @test all(air_density.(ts_p) .≈ air_density.(ts))
-        @test all(internal_energy.(ts_p) .≈ internal_energy.(ts))
+        T_virt = virtual_temperature.(Ref(param_set), T, ρ)
+        ts_ρTᵥ = PhaseDry_ρTᵥ.(Ref(param_set), ρ, T_virt)
+        @test all(air_density.(ts_ρTᵥ) .≈ air_density.(ts))
+        @test all(internal_energy.(ts_ρTᵥ) .≈ internal_energy.(ts))
 
         profiles = PhaseEquilProfiles(param_set, ArrayType)
         @unpack_fields profiles T p RS e_int ρ θ_liq_ice q_tot q_liq q_ice q_pt RH phase_type
@@ -877,6 +881,25 @@ end
             rtol = rtol_temperature,
         ))
         @test all(isapprox.(air_density.(ts), ρ, rtol = rtol_density))
+        @test all(getproperty.(PhasePartition.(ts), :tot) .≈ q_tot)
+
+        # PhaseEquil_ρTᵥRH
+        T_virt = virtual_temperature.(Ref(param_set), T, ρ, q_pt)
+        RH = relative_humidity.(Ref(param_set), T, p, phase_type, q_pt)
+        ts =
+            PhaseEquil_ρTᵥRH.(
+                Ref(param_set),
+                ρ,
+                T_virt,
+                RH,
+            )
+        @test all(isapprox.(
+            virtual_temperature.(ts),
+            T_virt,
+            rtol = rtol_temperature,
+        ))
+        @test all(isapprox.(air_density.(ts), ρ, rtol = rtol_density))
+        @test all(isapprox.(relative_humidity.(ts), RH))
         @test all(getproperty.(PhasePartition.(ts), :tot) .≈ q_tot)
 
         # The PhaseEquil_pθq constructor

@@ -4,10 +4,12 @@ export ThermodynamicState,
     PhaseDry,
     PhaseDry_ρT,
     PhaseDry_pT,
+    PhaseDry_ρTᵥ,
     PhaseDry_pθ,
     PhaseEquil,
     PhaseEquil_ρTq,
     PhaseEquil_pTq,
+    PhaseEquil_ρTᵥRH,
     PhaseEquil_ρθq,
     PhaseEquil_pθq,
     PhaseNonEquil,
@@ -132,6 +134,31 @@ Constructs a [`PhaseDry`](@ref) thermodynamic state from:
 function PhaseDry_ρT(param_set::APS, ρ::FT, T::FT) where {FT <: Real}
     e_int = internal_energy(param_set, T)
     return PhaseDry{FT, typeof(param_set)}(param_set, e_int, ρ)
+end
+
+"""
+    PhaseDry_ρTᵥ(param_set, ρ, T_virt)
+
+Constructs a [`PhaseDry`](@ref) thermodynamic state from:
+
+ - `param_set` an `AbstractParameterSet`, see the [`Thermodynamics`](@ref) for more details
+ - `ρ` density
+ - `T_virt` virtual temperature
+"""
+function PhaseDry_ρTᵥ(param_set::APS, ρ::FT, T_virt::FT) where {FT}
+    RH = FT(0)
+    # density computation from pressure ρ = -1/g*dpdz
+    (T, q_pt) = temperature_and_humidity_from_virtual_temperature(
+        param_set,
+        T_virt,
+        ρ,
+        RH,
+        PhaseDry,
+    )
+    # Update temperature to be exactly consistent with
+    # p, ρ, and q_pt
+    T = air_temperature_from_ideal_gas_law(param_set, p, ρ, q_pt)
+    return PhaseDry_ρT(param_set, ρ, T)
 end
 
 #####
@@ -295,6 +322,31 @@ function PhaseEquil_ρTq(
     q = PhasePartition_equil(param_set, T, ρ, q_tot, phase_type)
     e_int = internal_energy(param_set, T, q)
     return PhaseEquil{FT, typeof(param_set)}(param_set, e_int, ρ, q_tot, T)
+end
+
+"""
+    PhaseEquil_ρTᵥRH(param_set, ρ, T_virt, RH)
+
+Constructs a [`PhaseEquil`](@ref) thermodynamic state from temperature.
+
+ - `param_set` an `AbstractParameterSet`, see the [`Thermodynamics`](@ref) for more details
+ - `ρ` density
+ - `T` virtual temperature
+ - `RH` relative humidity
+"""
+function PhaseEquil_ρTᵥRH(param_set::APS, ρ::FT, T_virt::FT, RH::FT) where {FT}
+    # density computation from pressure ρ = -1/g*dpdz
+    (T, q_pt) = temperature_and_humidity_from_virtual_temperature(
+        param_set,
+        T_virt,
+        ρ,
+        RH,
+        PhaseEquil,
+    )
+    # Update temperature to be exactly consistent with
+    # p, ρ, and q_pt
+    T = air_temperature_from_ideal_gas_law(param_set, p, ρ, q_pt)
+    return PhaseEquil_ρTq(param_set, ρ, T, q_pt.tot)
 end
 
 """

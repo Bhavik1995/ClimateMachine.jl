@@ -68,49 +68,37 @@ function atmos_init_ref_state_pressure!(
 end
 
 function atmos_init_aux!(
-    m::HydrostaticState{P, F},
+    m::HydrostaticState{P},
     atmos::AtmosModel,
     aux::Vars,
     tmp::Vars,
     geom::LocalGeometry,
-) where {P, F}
+) where {P}
     z = altitude(atmos, aux)
     T_virt, p = m.virtual_temperature_profile(atmos.param_set, z)
     FT = eltype(aux)
-    _R_d::FT = R_d(atmos.param_set)
     k = vertical_unit_vector(atmos, aux)
     ∇Φ = ∇gravitational_potential(atmos, aux)
 
     # density computation from pressure ρ = -1/g*dpdz
     ρ = -k' * tmp.∇p / (k' * ∇Φ)
     aux.ref_state.ρ = ρ
-    RH = m.relative_humidity
-    phase_type = PhaseEquil
-    (T, q_pt) = temperature_and_humidity_from_virtual_temperature(
-        atmos.param_set,
-        T_virt,
-        ρ,
-        RH,
-        phase_type,
-    )
 
     # Update temperature to be exactly consistent with
     # p, ρ, and q_pt
-    T = air_temperature_from_ideal_gas_law(atmos.param_set, p, ρ, q_pt)
-    q_tot = q_pt.tot
-    q_liq = q_pt.liq
-    q_ice = q_pt.ice
     if atmos.moisture isa DryModel
-        ts = PhaseDry_ρT(atmos.param_set, ρ, T)
+        ts = PhaseDry_ρTᵥ(atmos.param_set, ρ, T_virt)
     else
-        ts = PhaseEquil_ρTq(atmos.param_set, ρ, T, q_tot)
+        RH = m.relative_humidity
+        ts = PhaseEquil_ρTᵥRH(atmos.param_set, ρ, T_virt, RH)
     end
+    q_pt = PhasePartition(ts)
 
-    aux.ref_state.ρq_tot = ρ * q_tot
-    aux.ref_state.ρq_liq = ρ * q_liq
-    aux.ref_state.ρq_ice = ρ * q_ice
-    aux.ref_state.T = T
-    e_kin = F(0)
+    aux.ref_state.ρq_tot = ρ * q_pt.tot
+    aux.ref_state.ρq_liq = ρ * q_pt.liq
+    aux.ref_state.ρq_ice = ρ * q_pt.ice
+    aux.ref_state.T = air_temperature(ts)
+    e_kin = FT(0)
     e_pot = gravitational_potential(atmos.orientation, aux)
     aux.ref_state.ρe = ρ * total_energy(e_kin, e_pot, ts)
 end
