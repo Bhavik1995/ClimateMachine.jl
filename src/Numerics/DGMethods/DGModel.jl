@@ -145,6 +145,7 @@ function (dg::DGModel)(tendency, state_prognostic, _, t, α, β)
         β = β != 0 # if β==0 then we can avoid the memory load in volume_tendency!
     end
 
+    # No communication if we are only evaluating the vertical direction on a stacked mesh
     communicate =
         !(isstacked(topology) && typeof(dg.direction) <: VerticalDirection)
 
@@ -184,6 +185,7 @@ function (dg::DGModel)(tendency, state_prognostic, _, t, α, β)
 
     if num_state_gradient_flux > 0 || nhyperviscstate > 0
 
+        # Evaluates the local functions within the cell (no comm needed)
         comp_stream = volume_gradients!(device, (Nq, Nq))(
             balance_law,
             Val(dim),
@@ -202,6 +204,8 @@ function (dg::DGModel)(tendency, state_prognostic, _, t, α, β)
             dependencies = (comp_stream,),
         )
 
+        # Evaluates interface gradients which are _interior_ to the parallel subdomain of interest
+        # in a given direction
         comp_stream = interface_gradients!(device, workgroups_surface)(
             balance_law,
             Val(dim),
@@ -224,6 +228,7 @@ function (dg::DGModel)(tendency, state_prognostic, _, t, α, β)
             dependencies = (comp_stream,),
         )
 
+        # Wait for the communication to end (after all computations above have finished)
         if communicate
             exchange_state_prognostic = MPIStateArrays.end_ghost_exchange!(
                 state_prognostic;
@@ -233,6 +238,7 @@ function (dg::DGModel)(tendency, state_prognostic, _, t, α, β)
             # update_aux may start asynchronous work on the compute device and
             # we synchronize those here through a device event.
             wait(device, exchange_state_prognostic)
+            # Call update aux on the ghost elements (avoids communicating with the aux state)
             update_auxiliary_state!(
                 dg,
                 balance_law,
@@ -243,6 +249,7 @@ function (dg::DGModel)(tendency, state_prognostic, _, t, α, β)
             exchange_state_prognostic = Event(device)
         end
 
+        # evaluates exterior facets on the parallel boundary
         comp_stream = interface_gradients!(device, workgroups_surface)(
             balance_law,
             Val(dim),
@@ -266,6 +273,7 @@ function (dg::DGModel)(tendency, state_prognostic, _, t, α, β)
         )
 
         if communicate
+            # If we need gradients, we need to communicate
             if num_state_gradient_flux > 0
                 exchange_state_gradient_flux =
                     MPIStateArrays.begin_ghost_exchange!(
@@ -281,6 +289,7 @@ function (dg::DGModel)(tendency, state_prognostic, _, t, α, β)
             end
         end
 
+        # Similar to update aux, but this is for gradient variables
         if num_state_gradient_flux > 0
             # update_aux_diffusive may start asynchronous work on the compute device
             # and we synchronize those here through a device event.
