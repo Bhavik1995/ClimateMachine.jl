@@ -244,10 +244,10 @@ function init_state_prognostic!(
     m::AdvectionDiffusion,
     state::Vars,
     aux::Vars,
-    coords,
+    localgeo,
     t::Real,
 )
-    initial_condition!(m.problem, state, aux, coords, t)
+    initial_condition!(m.problem, state, aux, localgeo.coord, t)
 end
 
 Neumann_data!(problem, ∇state, aux, x, t) = nothing
